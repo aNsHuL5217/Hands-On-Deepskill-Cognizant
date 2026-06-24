@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Task 1: Base Template — charset, viewport, title -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CityConnect – Local Community Event Portal</title>
+
+  <!-- ========================================================
+       INTERNAL CSS — Tasks 1, 3, 4, 5, 6
+  ======================================================== -->
+  <style>
+    /* ── Reset & tokens ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #1a2e4a;
+      --teal:   #0d7377;
+      --sky:    #14a8ad;
+      --cream:  #f5f7fa;
+      --white:  #ffffff;
+      --red:    #e03e3e;
+      --gold:   #f5a623;
+      --text:   #1e2d3d;
+      --muted:  #6b7a8d;
+      --radius: 10px;
+      --shadow: 0 4px 20px rgba(0,0,0,.10);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── Utilities ── */
+    .highlight { background: #fff3cd; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .section-title {
+      font-size: 1.7rem; font-weight: 700;
+      color: var(--navy); margin-bottom: 1.2rem;
+      border-left: 5px solid var(--sky); padding-left: 14px;
+    }
+    .card {
+      background: var(--white); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 2rem;
+    }
+    section { padding: 3.5rem 5vw; }
+    section:nth-child(even) { background: #eef3f9; }
+
+    /* ── Task 1: Navigation ── */
+    /* Navigation */
+    header {
+      background: var(--navy);
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,.3);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .9rem 5vw;
+    }
+    .logo { color: var(--sky); font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
+    .logo span { color: var(--white); }
+
+    nav a {
+      color: #cde; text-decoration: none;
+      margin-left: 1.4rem; font-size: .95rem; font-weight: 500;
+      transition: color .2s;
+    }
+    nav a:hover, nav a:focus { color: var(--sky); }
+
+    /* ── Task 3: Welcome Banner ── */
+    /* Welcome Banner */
+    #welcomeBanner {
+      background: linear-gradient(135deg, #1a2e4a 0%, #0d7377 100%);
+      color: white;
+      padding: 4rem 5vw 3rem;
+      text-align: center;
+    }
+    #welcomeBanner h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; margin-bottom: .6rem; }
+    #welcomeBanner p { font-size: 1.1rem; opacity: .85; max-width: 560px; margin: 0 auto 1.2rem; }
+    .special-offer { /* inline styles added in HTML */ }
+
+    /* ── Task 4: Image Gallery ── */
+    .gallery-table { width: 100%; border-collapse: separate; border-spacing: 14px; }
+    .gallery-table td { text-align: center; }
+    .event-img {
+      width: 100%; height: 160px; object-fit: cover;
+      border-radius: 8px; border: 3px solid var(--sky);
+      cursor: pointer; transition: transform .25s, box-shadow .25s;
+      display: block;
+    }
+    .event-img:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(0,0,0,.2); }
+    .img-caption { font-size: .82rem; color: var(--muted); margin-top: 5px; }
+
+    /* Image lightbox overlay */
+    #lightbox {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.85); z-index: 999;
+      align-items: center; justify-content: center;
+      flex-direction: column;
+    }
+    #lightbox.active { display: flex; }
+    #lightbox img { max-width: 80vw; max-height: 75vh; border-radius: 8px; }
+    #lightbox button {
+      margin-top: 1rem; background: var(--sky); color: white;
+      border: none; padding: .5rem 1.5rem; border-radius: 6px; cursor: pointer;
+    }
+
+    /* ── Task 5: Registration Form ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    .form-full { grid-column: 1 / -1; }
+    .form-group { display: flex; flex-direction: column; gap: .4rem; }
+    .form-group label { font-weight: 600; font-size: .9rem; color: var(--navy); }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: .6rem .9rem; border: 1.5px solid #c5d0de;
+      border-radius: 7px; font-size: 1rem;
+      transition: border-color .2s, box-shadow .2s;
+      font-family: inherit;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none; border-color: var(--sky);
+      box-shadow: 0 0 0 3px rgba(13,115,119,.15);
+    }
+    .form-group input.invalid { border-color: var(--red); }
+    .btn-primary {
+      background: var(--teal); color: white;
+      border: none; padding: .75rem 2rem;
+      border-radius: 8px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background .2s, transform .1s;
+    }
+    .btn-primary:hover { background: var(--navy); }
+    .btn-primary:active { transform: scale(.97); }
+    .btn-secondary {
+      background: transparent; color: var(--teal);
+      border: 2px solid var(--teal);
+      padding: .7rem 1.6rem; border-radius: 8px;
+      font-size: .95rem; font-weight: 600;
+      cursor: pointer; transition: all .2s; margin-left: .6rem;
+    }
+    .btn-secondary:hover { background: var(--teal); color: white; }
+
+    output#confirmOutput {
+      display: block; margin-top: 1rem;
+      background: #d4edda; color: #155724;
+      padding: .8rem 1.2rem; border-radius: 7px;
+      font-weight: 600; border-left: 4px solid #28a745;
+    }
+    output#confirmOutput:empty { display: none; }
+
+    /* ── Task 6: Feedback ── */
+    .fee-display {
+      background: var(--navy); color: var(--gold);
+      padding: .6rem 1.2rem; border-radius: 7px;
+      font-weight: 700; font-size: 1.1rem;
+      display: inline-block; min-width: 120px;
+    }
+    .char-count { font-size: .82rem; color: var(--muted); text-align: right; margin-top: 3px; }
+    .char-count.warn { color: var(--red); font-weight: 600; }
+    .phone-error { font-size: .82rem; color: var(--red); display: none; margin-top: 3px; }
+
+    /* ── Task 7: Video ── */
+    .video-wrapper {
+      position: relative; background: #000;
+      border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--shadow); max-width: 720px; margin: 0 auto;
+    }
+    .video-wrapper video { width: 100%; display: block; }
+    #videoStatus {
+      text-align: center; margin-top: .8rem;
+      font-weight: 600; color: var(--teal); min-height: 1.5rem;
+    }
+
+    /* ── Task 8: Preferences ── */
+    .pref-row {
+      display: flex; align-items: center; gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .pref-badge {
+      background: var(--sky); color: white;
+      padding: .4rem 1rem; border-radius: 20px; font-weight: 600;
+      min-width: 160px; text-align: center;
+    }
+
+    /* ── Task 9: Geolocation ── */
+    .geo-box {
+      background: var(--navy); color: #cde;
+      padding: 1.2rem 1.6rem; border-radius: var(--radius);
+      font-family: monospace; font-size: .95rem; margin-top: 1rem;
+      min-height: 60px; line-height: 1.8;
+    }
+
+    /* ── Task 10: Debug Panel ── */
+    .debug-console {
+      background: #0f1923; color: #7effa6;
+      font-family: monospace; font-size: .88rem;
+      padding: 1.2rem; border-radius: var(--radius);
+      max-height: 220px; overflow-y: auto;
+      margin-top: 1rem;
+    }
+    .debug-console .log-line { border-bottom: 1px solid #1e3040; padding: 3px 0; }
+    .debug-console .log-line.warn { color: var(--gold); }
+    .debug-console .log-line.err  { color: #ff7070; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .form-grid { grid-template-columns: 1fr; }
+      nav a { margin-left: .8rem; font-size: .85rem; }
+    }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--navy); color: #8aabcc;
+      text-align: center; padding: 2rem 5vw;
+      font-size: .9rem;
+    }
+    footer strong { color: var(--sky); }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       TASK 1 — Base Template + TASK 2 — Navigation and Linking
+  ============================================================ -->
+
+  <!-- Navigation -->
+  <header>
+    <div class="nav-inner">
+      <span class="logo">City<span>Connect</span></span>
+      <!-- Task 2: <nav> with anchor links to section IDs -->
+      <nav aria-label="Main navigation">
+        <a href="#home">Home</a>
+        <a href="#events">Events</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#register">Register</a>
+        <a href="#feedback">Feedback</a>
+        <a href="#contact">Contact</a>
+        <!-- Task 2: External link opens in new tab -->
+        <a href="help.html" target="_blank" rel="noopener">Help ↗</a>
+      </nav>
+    </div>
+  </header>
+
+
+  <!-- ============================================================
+       TASK 3 — Welcome Banner (id, class, inline styles)
+  ============================================================ -->
+
+  <!-- Welcome Banner -->
+  <div id="welcomeBanner">
+    <h1>Welcome back, <span class="highlight">Resident</span> 👋</h1>
+    <p>Your gateway to local events, community news, and city services — all in one place.</p>
+    <!-- Task 3: inline style for special offer span -->
+    <p>
+      <span class="special-offer"
+            style="color: #ff6b6b; font-weight: bold; font-size: 1.15rem;
+                   background: rgba(255,255,255,.12); padding: 4px 12px;
+                   border-radius: 6px; display: inline-block;">
+        🎉 Special Offer: Free entry for first-time registrants this month!
+      </span>
+    </p>
+  </div>
+
+
+  <!-- ============================================================
+       TASK 2 — Section IDs (Home)
+  ============================================================ -->
+
+  <!-- Main Content -->
+  <main>
+
+    <!-- Home Section -->
+    <section id="home">
+      <h2 class="section-title">About This Portal</h2>
+      <div class="card">
+        <p>
+          CityConnect helps <span class="highlight">Pune residents</span> discover local events,
+          register with ease, and stay informed about community activities.
+          Browse our upcoming <a href="#events">Events</a>, sign up via the
+          <a href="#register">Registration Form</a>, or reach us on the
+          <a href="#contact">Contact</a> page.
+        </p>
+        <br>
+        <p style="color: var(--muted);">
+          Need help navigating? Visit our
+          <a href="help.html" target="_blank" rel="noopener"
+             style="color: var(--teal); font-weight:600;">Help Guide ↗</a>.
+        </p>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         TASK 4 — Image Gallery (table layout, img, alt, title, class)
+    ============================================================ -->
+
+    <!-- Gallery Section -->
+    <section id="gallery">
+      <h2 class="section-title">Past Community Events</h2>
+
+      <!-- Task 4: 2×3 table of images with alt, title, border class -->
+      <table class="gallery-table" role="presentation">
+        <caption style="caption-side:bottom; font-size:.9rem; color:var(--muted); margin-top:.8rem;">
+          Gallery of recent community events — double-click any image to enlarge
+        </caption>
+        <tbody>
+          <tr>
+            <td>
+              <!-- Task 6: ondblclick to enlarge -->
+              <img class="event-img"
+                   src="https://picsum.photos/seed/festival/400/250"
+                   alt="Annual City Festival — crowds enjoying music and food stalls"
+                   title="Annual City Festival"
+                   ondblclick="openLightbox(this.src, this.alt)">
+              <p class="img-caption">🎶 Annual City Festival</p>
+            </td>
+            <td>
+              <img class="event-img"
+                   src="https://picsum.photos/seed/cleanup/400/250"
+                   alt="Community clean-up drive volunteers collecting waste in the park"
+                   title="Clean-Up Drive 2024"
+                   ondblclick="openLightbox(this.src, this.alt)">
+              <p class="img-caption">🌿 Clean-Up Drive</p>
+            </td>
+            <td>
+              <img class="event-img"
+                   src="https://picsum.photos/seed/sports/400/250"
+                   alt="Youth sports tournament — children competing on the football field"
+                   title="Youth Sports Tournament"
+                   ondblclick="openLightbox(this.src, this.alt)">
+              <p class="img-caption">⚽ Youth Sports Tournament</p>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <img class="event-img"
+                   src="https://picsum.photos/seed/workshop/400/250"
+                   alt="Digital literacy workshop participants learning on laptops"
+                   title="Digital Literacy Workshop"
+                   ondblclick="openLightbox(this.src, this.alt)">
+              <p class="img-caption">💻 Digital Literacy Workshop</p>
+            </td>
+            <td>
+              <img class="event-img"
+                   src="https://picsum.photos/seed/health/400/250"
+                   alt="Free health check-up camp with doctors and nurses assisting residents"
+                   title="Health Camp 2024"
+                   ondblclick="openLightbox(this.src, this.alt)">
+              <p class="img-caption">🏥 Health Camp</p>
+            </td>
+            <td>
+              <img class="event-img"
+                   src="https://picsum.photos/seed/market/400/250"
+                   alt="Farmers market with fresh produce stalls and local vendors"
+                   title="Local Farmers Market"
+                   ondblclick="openLightbox(this.src, this.alt)">
+              <p class="img-caption">🛒 Farmers Market</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Lightbox overlay (Task 6 — ondblclick) -->
+    <div id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer"
+         onclick="closeLightbox()">
+      <img id="lightboxImg" src="" alt="">
+      <button onclick="closeLightbox(); event.stopPropagation();">✕ Close</button>
+    </div>
+
+
+    <!-- ============================================================
+         TASK 2 — Events Section ID
+    ============================================================ -->
+
+    <!-- Events Section -->
+    <section id="events">
+      <h2 class="section-title">Upcoming Events</h2>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap:1.2rem;">
+
+        <div class="card" style="border-top: 4px solid var(--sky);">
+          <p style="color:var(--muted);font-size:.82rem;">📅 July 12, 2025</p>
+          <h3 style="margin:.4rem 0;">City Marathon 2025</h3>
+          <p style="font-size:.9rem;">Run through the heart of the city. All ages welcome.</p>
+          <p style="color:var(--teal);font-weight:700;margin-top:.6rem;">Free Entry</p>
+        </div>
+
+        <div class="card" style="border-top: 4px solid var(--gold);">
+          <p style="color:var(--muted);font-size:.82rem;">📅 July 20, 2025</p>
+          <h3 style="margin:.4rem 0;">Art & Culture Fair</h3>
+          <p style="font-size:.9rem;">Celebrate local artists, crafts, music and cuisine.</p>
+          <p style="color:var(--teal);font-weight:700;margin-top:.6rem;">₹50/person</p>
+        </div>
+
+        <div class="card" style="border-top: 4px solid #a855f7;">
+          <p style="color:var(--muted);font-size:.82rem;">📅 August 3, 2025</p>
+          <h3 style="margin:.4rem 0;">Tech for Citizens</h3>
+          <p style="font-size:.9rem;">Workshops on digital payments, safety & more.</p>
+          <p style="color:var(--teal);font-weight:700;margin-top:.6rem;">₹100/person</p>
+        </div>
+
+        <div class="card" style="border-top: 4px solid #22c55e;">
+          <p style="color:var(--muted);font-size:.82rem;">📅 August 15, 2025</p>
+          <h3 style="margin:.4rem 0;">Independence Day Parade</h3>
+          <p style="font-size:.9rem;">Join the city-wide parade and cultural programme.</p>
+          <p style="color:var(--teal);font-weight:700;margin-top:.6rem;">Free Entry</p>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         TASK 5 — Event Registration Form
+    ============================================================ -->
+
+    <!-- Register Section -->
+    <section id="register">
+      <h2 class="section-title">Event Registration</h2>
+      <div class="card">
+
+        <!-- Task 7: onbeforeunload warning if form is dirty -->
+        <form id="registrationForm" novalidate onsubmit="handleFormSubmit(event)">
+
+          <div class="form-grid">
+
+            <!-- Name — Task 5: autofocus, required, placeholder -->
+            <div class="form-group">
+              <label for="fullName">Full Name *</label>
+              <input type="text" id="fullName" name="fullName"
+                     placeholder="e.g. Anshul Sharma"
+                     required autofocus>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+              <label for="email">Email Address *</label>
+              <input type="email" id="email" name="email"
+                     placeholder="you@example.com" required>
+            </div>
+
+            <!-- Date -->
+            <div class="form-group">
+              <label for="eventDate">Preferred Date *</label>
+              <input type="date" id="eventDate" name="eventDate" required>
+            </div>
+
+            <!-- Event Type — Task 5 & 8 (saved to localStorage) -->
+            <div class="form-group">
+              <label for="eventType">Event Type *</label>
+              <select id="eventType" name="eventType" required
+                      onchange="savePreference(); showEventFee(this.value)">
+                <option value="">-- Select an Event --</option>
+                <option value="marathon">City Marathon 2025 — Free</option>
+                <option value="artfair">Art & Culture Fair — ₹50</option>
+                <option value="techworkshop">Tech for Citizens — ₹100</option>
+                <option value="parade">Independence Day Parade — Free</option>
+              </select>
+            </div>
+
+            <!-- Phone — Task 6: onblur validation -->
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone"
+                     placeholder="10-digit mobile number"
+                     onblur="validatePhone(this)">
+              <span class="phone-error" id="phoneError">
+                ⚠ Please enter a valid 10-digit Indian mobile number.
+              </span>
+            </div>
+
+            <!-- Message / Textarea — Task 5 & 6 char count -->
+            <div class="form-group form-full">
+              <label for="message">Additional Message</label>
+              <textarea id="message" name="message" rows="4"
+                        placeholder="Any special requirements or questions..."
+                        oninput="countChars(this)"
+                        onkeydown="logKeyEvent(event)"></textarea>
+              <p class="char-count" id="charCount">0 / 500 characters</p>
+            </div>
+
+          </div><!-- /.form-grid -->
+
+          <div style="margin-top:1.2rem; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;">
+            <!-- Task 6: onclick confirmation -->
+            <button type="submit" class="btn-primary"
+                    onclick="logDebug('Submit button clicked')">
+              ✅ Register Now
+            </button>
+            <button type="reset" class="btn-secondary"
+                    onclick="clearOutput()">Reset</button>
+          </div>
+
+          <!-- Task 5: <output> for confirmation message -->
+          <output id="confirmOutput" for="fullName email eventType"></output>
+
+        </form>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         TASK 6 — Event Feedback (events: blur, change, click, dblclick, keydown)
+    ============================================================ -->
+
+    <!-- Feedback Section -->
+    <section id="feedback">
+      <h2 class="section-title">Event Feedback</h2>
+      <div class="card">
+
+        <div class="form-grid">
+
+          <!-- onchange → show event fee -->
+          <div class="form-group">
+            <label for="feedbackEvent">Select Event</label>
+            <select id="feedbackEvent"
+                    onchange="showEventFee(this.value)">
+              <option value="">-- Pick an event --</option>
+              <option value="marathon">City Marathon 2025</option>
+              <option value="artfair">Art & Culture Fair</option>
+              <option value="techworkshop">Tech for Citizens</option>
+              <option value="parade">Independence Day Parade</option>
+            </select>
+            <div style="margin-top:.6rem;">
+              Event Fee: <span class="fee-display" id="feeDisplay">—</span>
+            </div>
+          </div>
+
+          <!-- onblur → phone validation (Task 6) -->
+          <div class="form-group">
+            <label for="feedbackPhone">Your Phone</label>
+            <input type="tel" id="feedbackPhone"
+                   placeholder="10-digit number"
+                   onblur="validatePhone(this)">
+            <span class="phone-error" id="feedbackPhoneError">
+              ⚠ Please enter a valid 10-digit Indian mobile number.
+            </span>
+          </div>
+
+          <!-- Feedback textarea + keydown char count -->
+          <div class="form-group form-full">
+            <label for="feedbackText">Your Feedback</label>
+            <textarea id="feedbackText" rows="4"
+                      placeholder="Share your experience..."
+                      oninput="countFeedbackChars(this)"
+                      onkeydown="logKeyEvent(event)"></textarea>
+            <p class="char-count" id="feedbackCharCount">0 / 300 characters</p>
+          </div>
+
+        </div>
+
+        <div style="margin-top:1rem; display:flex; gap:.8rem; flex-wrap:wrap;">
+          <!-- onclick confirmation -->
+          <button class="btn-primary"
+                  onclick="submitFeedback()">📨 Submit Feedback</button>
+        </div>
+
+        <output id="feedbackOutput" for="feedbackEvent feedbackText"
+                style="display:block;margin-top:1rem;"></output>
+
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         TASK 7 — Video Invite with Media Events
+    ============================================================ -->
+
+    <!-- Video Section -->
+    <section id="video">
+      <h2 class="section-title">Event Promo Video</h2>
+      <div class="card">
+        <p style="margin-bottom:1rem; color:var(--muted);">
+          Watch a short clip from our last annual community event.
+        </p>
+        <div class="video-wrapper">
+          <!-- Task 7: <video> with controls and oncanplay -->
+          <video id="promoVideo"
+                 controls
+                 preload="metadata"
+                 oncanplay="videoReady()"
+                 onplay="logDebug('Video playback started')"
+                 onpause="logDebug('Video paused')"
+                 onended="logDebug('Video finished')">
+            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+            <source src="https://www.w3schools.com/html/mov_bbb.ogg" type="video/ogg">
+            Your browser does not support HTML5 video.
+          </video>
+        </div>
+        <!-- Task 7: status message on canplay -->
+        <p id="videoStatus"></p>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         TASK 8 — Saving User Preferences (localStorage / sessionStorage)
+    ============================================================ -->
+
+    <!-- Preferences Section -->
+    <section id="preferences">
+      <h2 class="section-title">Your Saved Preferences</h2>
+      <div class="card">
+        <p style="margin-bottom:1rem;">
+          Your preferred event type is automatically saved and restored on next visit.
+        </p>
+        <div class="pref-row">
+          <div>
+            <p style="font-size:.9rem; color:var(--muted); margin-bottom:.3rem;">
+              💾 Saved preference (localStorage):
+            </p>
+            <span class="pref-badge" id="prefBadge">None saved yet</span>
+          </div>
+          <div>
+            <p style="font-size:.9rem; color:var(--muted); margin-bottom:.3rem;">
+              🕐 Session preference (sessionStorage):
+            </p>
+            <span class="pref-badge" id="sessionBadge">None</span>
+          </div>
+          <!-- Task 8: Clear button -->
+          <button class="btn-secondary" onclick="clearPreferences()"
+                  style="margin-left:0;">🗑 Clear Preferences</button>
+        </div>
+        <p id="prefStatus" style="margin-top:.8rem; color:var(--teal); font-weight:600; min-height:1.4rem;"></p>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         TASK 9 — Geolocation
+    ============================================================ -->
+
+    <!-- Geolocation Section -->
+    <section id="geo">
+      <h2 class="section-title">Find Nearby Events</h2>
+      <div class="card">
+        <p style="margin-bottom:1rem;">
+          Allow location access to find community events nearest to you.
+        </p>
+        <!-- Task 9: button triggers getCurrentPosition -->
+        <button class="btn-primary" onclick="findNearbyEvents()">
+          📍 Find Nearby Events
+        </button>
+
+        <div class="geo-box" id="geoOutput">
+          Hit the button above to detect your location.
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         TASK 10 — Debugging Panel
+    ============================================================ -->
+
+    <!-- Debug Section -->
+    <section id="debug" style="background:#0f1923; padding:3rem 5vw;">
+      <h2 class="section-title" style="color:#7effa6; border-left-color:#7effa6;">
+        🛠 DevTools Debug Console
+      </h2>
+      <div class="card" style="background:#162030; border:1px solid #1e3a50;">
+        <p style="color:#8aabcc; margin-bottom:1rem; font-size:.92rem;">
+          This panel mirrors <code style="color:#7effa6;">console.log</code> output.
+          Use Chrome DevTools → Console / Sources tabs to set breakpoints and inspect live values.
+        </p>
+        <div style="display:flex; gap:.8rem; flex-wrap:wrap; margin-bottom:1rem;">
+          <button class="btn-primary" onclick="runDebugTests()" style="background:#0d7377;">
+            ▶ Run Debug Tests
+          </button>
+          <button class="btn-secondary" onclick="clearDebugConsole()"
+                  style="border-color:#0d7377; color:#7effa6;">
+            Clear Console
+          </button>
+        </div>
+        <!-- Task 10: visual debug console -->
+        <div class="debug-console" id="debugConsole">
+          <div class="log-line">// Debug output will appear here...</div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         TASK 2 — Contact Section ID
+    ============================================================ -->
+
+    <!-- Contact Section -->
+    <section id="contact">
+      <h2 class="section-title">Contact Us</h2>
+      <div class="card">
+        <p>📧 <strong>Email:</strong> events@cityconnect.in</p>
+        <p>📞 <strong>Phone:</strong> +91-20-1234-5678</p>
+        <p>🏢 <strong>Office:</strong> Civic Centre, Shivajinagar, Pune – 411005</p>
+        <p style="margin-top:.8rem;">
+          <a href="help.html" target="_blank" rel="noopener"
+             style="color:var(--teal); font-weight:600;">Visit our Help Center ↗</a>
+        </p>
+      </div>
+    </section>
+
+  </main><!-- /main -->
+
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 <strong>CityConnect</strong> — Pune City Council Community Portal</p>
+    <p style="margin-top:.3rem; font-size:.82rem;">
+      Built with HTML5 · All 10 exercises implemented
+    </p>
+  </footer>
+
+
+  <!-- ============================================================
+       JAVASCRIPT — Tasks 3,5,6,7,8,9,10
+  ============================================================ -->
+  <script>
+    /* ============================================================
+       TASK 6: onclick – Form submit confirmation
+    ============================================================ */
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      const form = event.target;
+
+      // Basic validation
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const name = document.getElementById('fullName').value;
+      const type = document.getElementById('eventType');
+      const eventLabel = type.options[type.selectedIndex].text;
+
+      const output = document.getElementById('confirmOutput');
+      output.textContent =
+        `✅ Thank you, ${name}! You are registered for "${eventLabel}". Confirmation sent to ${document.getElementById('email').value}.`;
+
+      logDebug(`Form submitted — Name: ${name}, Event: ${eventLabel}`);
+      formDirty = false;
+    }
+
+    function clearOutput() {
+      document.getElementById('confirmOutput').textContent = '';
+      formDirty = false;
+      logDebug('Form reset');
+    }
+
+    /* ============================================================
+       TASK 6: onblur – Phone number validation
+    ============================================================ */
+    function validatePhone(input) {
+      // Indian mobile: starts with 6-9, exactly 10 digits
+      const regex = /^[6-9]\d{9}$/;
+      const errorId = input.id === 'phone' ? 'phoneError' : 'feedbackPhoneError';
+      const errorEl = document.getElementById(errorId);
+
+      if (input.value && !regex.test(input.value.trim())) {
+        input.classList.add('invalid');
+        errorEl.style.display = 'block';
+        logDebug(`Phone validation failed: "${input.value}"`, 'warn');
+      } else {
+        input.classList.remove('invalid');
+        errorEl.style.display = 'none';
+        if (input.value) logDebug('Phone number validated ✓');
+      }
+    }
+
+    /* ============================================================
+       TASK 6: onchange – Show event fee in dropdown
+    ============================================================ */
+    const fees = {
+      marathon:     'Free',
+      artfair:      '₹50',
+      techworkshop: '₹100',
+      parade:       'Free'
+    };
+
+    function showEventFee(value) {
+      const display = document.getElementById('feeDisplay');
+      display.textContent = fees[value] || '—';
+      logDebug(`Event fee for "${value}": ${fees[value] || 'N/A'}`);
+    }
+
+    /* ============================================================
+       TASK 6: oninput + onkeydown – Character counting
+    ============================================================ */
+    function countChars(textarea) {
+      const max = 500;
+      const count = textarea.value.length;
+      const el = document.getElementById('charCount');
+      el.textContent = `${count} / ${max} characters`;
+      el.classList.toggle('warn', count > max * 0.85);
+      if (count > 0) formDirty = true;
+    }
+
+    function countFeedbackChars(textarea) {
+      const max = 300;
+      const count = textarea.value.length;
+      const el = document.getElementById('feedbackCharCount');
+      el.textContent = `${count} / ${max} characters`;
+      el.classList.toggle('warn', count > max * 0.85);
+    }
+
+    function logKeyEvent(e) {
+      // Suppress high-frequency logging — only log Enter and Escape
+      if (e.key === 'Enter' || e.key === 'Escape') {
+        logDebug(`Key pressed in textarea: "${e.key}" (code: ${e.code})`);
+      }
+    }
+
+    /* ============================================================
+       TASK 6: ondblclick – Image lightbox
+    ============================================================ */
+    function openLightbox(src, alt) {
+      const lb = document.getElementById('lightbox');
+      document.getElementById('lightboxImg').src = src;
+      document.getElementById('lightboxImg').alt = alt;
+      lb.classList.add('active');
+      logDebug(`Lightbox opened for: ${alt}`);
+    }
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('active');
+    }
+
+    /* ============================================================
+       TASK 6: Feedback submit (onclick)
+    ============================================================ */
+    function submitFeedback() {
+      const event = document.getElementById('feedbackEvent').value;
+      const text  = document.getElementById('feedbackText').value.trim();
+
+      const output = document.getElementById('feedbackOutput');
+      if (!event || !text) {
+        output.style.cssText = 'display:block;background:#f8d7da;color:#721c24;padding:.8rem 1.2rem;border-radius:7px;border-left:4px solid #dc3545;';
+        output.textContent = '⚠ Please select an event and write your feedback.';
+        return;
+      }
+      output.style.cssText = 'display:block;background:#d4edda;color:#155724;padding:.8rem 1.2rem;border-radius:7px;border-left:4px solid #28a745;font-weight:600;';
+      output.textContent = `✅ Thank you for your feedback on "${event}"! We appreciate your response.`;
+      logDebug(`Feedback submitted for event: ${event}`);
+    }
+
+    /* ============================================================
+       TASK 7: oncanplay – Video ready message
+    ============================================================ */
+    function videoReady() {
+      const status = document.getElementById('videoStatus');
+      status.textContent = '✅ Video ready to play — click the play button to watch!';
+      logDebug('Video: canplay event fired');
+    }
+
+    /* ============================================================
+       TASK 7: onbeforeunload – Warn if form is dirty
+    ============================================================ */
+    let formDirty = false;
+    // Mark form as dirty when user types in any field
+    document.getElementById('registrationForm').addEventListener('input', () => {
+      formDirty = true;
+    });
+
+    window.onbeforeunload = function (e) {
+      if (formDirty) {
+        const msg = 'You have unsaved registration details. Are you sure you want to leave?';
+        e.returnValue = msg;
+        return msg;
+      }
+    };
+
+    /* ============================================================
+       TASK 8: localStorage / sessionStorage — Save & restore preferences
+    ============================================================ */
+    const eventLabels = {
+      marathon:     'City Marathon 2025',
+      artfair:      'Art & Culture Fair',
+      techworkshop: 'Tech for Citizens',
+      parade:       'Independence Day Parade'
+    };
+
+    function savePreference() {
+      const val = document.getElementById('eventType').value;
+      if (val) {
+        localStorage.setItem('preferredEvent', val);
+        sessionStorage.setItem('sessionEvent', val);
+        updatePrefBadges();
+        document.getElementById('prefStatus').textContent =
+          `✅ Preference "${eventLabels[val]}" saved!`;
+        logDebug(`Saved to localStorage: preferredEvent = "${val}"`);
+      }
+    }
+
+    function loadPreference() {
+      const saved = localStorage.getItem('preferredEvent');
+      const session = sessionStorage.getItem('sessionEvent');
+
+      // Pre-select dropdown if saved value exists
+      if (saved) {
+        const select = document.getElementById('eventType');
+        if ([...select.options].some(o => o.value === saved)) {
+          select.value = saved;
+          showEventFee(saved);
+        }
+        logDebug(`Restored preference from localStorage: "${saved}"`);
+      }
+
+      updatePrefBadges();
+    }
+
+    function updatePrefBadges() {
+      const saved   = localStorage.getItem('preferredEvent');
+      const session = sessionStorage.getItem('sessionEvent');
+      document.getElementById('prefBadge').textContent =
+        saved ? eventLabels[saved] : 'None saved yet';
+      document.getElementById('sessionBadge').textContent =
+        session ? eventLabels[session] : 'None';
+    }
+
+    function clearPreferences() {
+      localStorage.clear();
+      sessionStorage.clear();
+      document.getElementById('eventType').value = '';
+      document.getElementById('feeDisplay').textContent = '—';
+      updatePrefBadges();
+      document.getElementById('prefStatus').textContent = '🗑 All preferences cleared.';
+      logDebug('localStorage and sessionStorage cleared', 'warn');
+    }
+
+    /* ============================================================
+       TASK 9: Geolocation — getCurrentPosition with options & error handling
+    ============================================================ */
+    function findNearbyEvents() {
+      const box = document.getElementById('geoOutput');
+      box.textContent = '⏳ Requesting your location...';
+
+      if (!navigator.geolocation) {
+        box.textContent = '❌ Geolocation is not supported by your browser.';
+        logDebug('Geolocation not supported', 'error');
+        return;
+      }
+
+      // Task 9: High accuracy options
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 10000,       // 10 second timeout
+        maximumAge: 0         // never use cached position
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude, accuracy } = position.coords;
+
+          // Simulated "nearest events" based on coords
+          box.innerHTML = `
+            <strong>📍 Your Location Detected:</strong><br>
+            Latitude:  ${latitude.toFixed(6)}°<br>
+            Longitude: ${longitude.toFixed(6)}°<br>
+            Accuracy:  ±${Math.round(accuracy)} metres<br><br>
+            <strong>🗺 Nearest Events:</strong><br>
+            • City Marathon — 1.2 km away (Nehru Stadium)<br>
+            • Health Camp — 2.8 km away (Civic Centre)<br>
+            • Farmers Market — 3.5 km away (FC Road)
+          `;
+          logDebug(`Geolocation success — Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`);
+        },
+        (error) => {
+          // Task 9: Error handling
+          let msg;
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              msg = '🚫 Location permission denied. Please allow access in your browser settings.'; break;
+            case error.POSITION_UNAVAILABLE:
+              msg = '📡 Location information is currently unavailable.'; break;
+            case error.TIMEOUT:
+              msg = '⏱ Location request timed out. Please try again.'; break;
+            default:
+              msg = '❌ An unknown error occurred while retrieving location.';
+          }
+          box.textContent = msg;
+          logDebug(`Geolocation error (code ${error.code}): ${msg}`, 'error');
+        },
+        options
+      );
+    }
+
+    /* ============================================================
+       TASK 10: Custom debug logger (mirrors console.log)
+    ============================================================ */
+    const debugConsole = document.getElementById('debugConsole');
+
+    function logDebug(message, type = 'log') {
+      // Also write to the real browser console (visible in DevTools)
+      if      (type === 'warn')  console.warn('[CityConnect]', message);
+      else if (type === 'error') console.error('[CityConnect]', message);
+      else                       console.log('[CityConnect]', message);
+
+      // Mirror into the visual debug panel
+      const line = document.createElement('div');
+      line.className = `log-line ${type === 'warn' ? 'warn' : type === 'error' ? 'err' : ''}`;
+      const timestamp = new Date().toLocaleTimeString();
+      line.textContent = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+      debugConsole.appendChild(line);
+      debugConsole.scrollTop = debugConsole.scrollHeight;
+    }
+
+    function runDebugTests() {
+      // Task 10: demonstrates console output and breakpoint-friendly variable inspection
+      logDebug('Debug test suite started');
+
+      const testData = {
+        user: 'Anshul',
+        event: localStorage.getItem('preferredEvent') || 'none',
+        timestamp: new Date().toISOString()
+      };
+
+      // debugger; // ← Uncomment to set a breakpoint here in DevTools
+      logDebug(`User context: ${JSON.stringify(testData)}`);
+      logDebug('Checking localStorage...', 'log');
+      logDebug(`preferredEvent = "${localStorage.getItem('preferredEvent') || 'null'}"`, 'log');
+
+      if (!localStorage.getItem('preferredEvent')) {
+        logDebug('No preference saved — user has not selected an event yet', 'warn');
+      }
+
+      logDebug('DOM element check: #registrationForm exists = ' +
+        (!!document.getElementById('registrationForm')), 'log');
+      logDebug('Geolocation available = ' + (!!navigator.geolocation), 'log');
+      logDebug('Debug test suite completed ✓');
+    }
+
+    function clearDebugConsole() {
+      debugConsole.innerHTML = '<div class="log-line">// Console cleared.</div>';
+    }
+
+    /* ============================================================
+       PAGE INIT — run on DOMContentLoaded
+    ============================================================ */
+    document.addEventListener('DOMContentLoaded', () => {
+      loadPreference();       // Task 8: restore saved event type
+      logDebug('CityConnect portal loaded');
+      logDebug(`Page URL: ${location.href}`);
+      logDebug(`LocalStorage keys: [${Object.keys(localStorage).join(', ') || 'empty'}]`);
+    });
+
+  </script>
+
+</body>
+</html>
